@@ -1,0 +1,6 @@
+BSD
+scripts/dictionary/gen_zip_code_seed.py: [COPYING](https://github.com/google/mozc/raw/master/src/dictionary/gen_zip_code_seed.py)
+scripts/dictionary/zip_code_util.py: [COPYING](https://github.com/google/mozc/raw/master/src/dictionary/zip_code_util.py)
+
+scripts/user_dict.rb
+Apache License, Version 2.0
