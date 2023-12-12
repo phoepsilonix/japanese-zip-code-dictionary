@@ -15,8 +15,8 @@ unzip -o jigyosyo.zip
 PYTHONPATH="$PWD:$PYTHONPATH" python dictionary/gen_zip_code_seed.py --zip_code="${SRCTXT1}" > ${SEEDTXT1}
 PYTHONPATH="$PWD:$PYTHONPATH" python dictionary/gen_zip_code_seed.py --jigyosyo="${SRCTXT2}" > ${SEEDTXT2}
 
-cat ${SEEDTXT1} |awk 'BEGIN{FS="\t"}{print $1 "\t" $5 "\t" "地名" "\t"}' |sort -u > ../${USERDIC}
-cat ${SEEDTXT2} |awk 'BEGIN{FS="\t"}{print $1 "\t" $5 "\t" "組織" "\t"}' |sort -u >> ../${USERDIC}
+cat ${SEEDTXT1} |awk 'BEGIN{FS="\t"}!a[$0]++{print $1 "\t" $5 "\t" "地名" "\t"}' > ../${USERDIC}
+cat ${SEEDTXT2} |awk 'BEGIN{FS="\t"}!a[$0]++{print $1 "\t" $5 "\t" "組織" "\t"}' >> ../${USERDIC}
 
 split --numeric-suffixes=1 -l 1000000 --additional-suffix=.txt ../$USERDIC $USERDIC-
 rm ../${USERDIC}
