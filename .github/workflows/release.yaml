@@ -10,23 +10,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        ruby-version: ['3.2']
-
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Ruby ${{ matrix.ruby-version }}
-        uses: ruby/setup-ruby@ec02537da5712d66d4d50a0f33b7eb52773b5ed1
-        with:
-          ruby-version: ${{ matrix.ruby-version }}
-      - name: gem install
-        run: |
-          gem install parallel
       - name: Build
         run: |
-          export RUBY_YJIT_ENABLE=1
-          export RUBYOPT=--yjit
           mkdir -p release
           (cd scripts; bash make.sh)
           ls release 1>&2
