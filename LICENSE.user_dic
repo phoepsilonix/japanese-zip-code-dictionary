@@ -1,6 +1,8 @@
 Public Domain
 https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip
 https://www.post.japanpost.jp/zipcode/dl/jigyosyo/zip/jigyosyo.zip
-
-release/user_dic-japanese-zip-code.tar.xz:Public Domain
-user_dic-japanese-zip-code-01.txt:Public Domain.
+----
+Public Domain
+release/user_dic-japanese-zip-code.tar.xz
+user_dic-japanese-zip-code-ken-01.txt
+user_dic-japanese-zip-code-jigyosyo-01.txt

@@ -14,11 +14,10 @@ USERDIC2=user_dic-japanese-zip-code-jigyosyo
 unzip -o ken_all.zip
 unzip -o jigyosyo.zip
 
-PYTHONPATH="$PWD:$PYTHONPATH" python dictionary/gen_zip_code_seed.py --zip_code="${SRCTXT1}" > ${SEEDTXT1}
-PYTHONPATH="$PWD:$PYTHONPATH" python dictionary/gen_zip_code_seed.py --jigyosyo="${SRCTXT2}" > ${SEEDTXT2}
-
-awk 'BEGIN{FS="\t"}!a[$0]++{print $1 "\t" $5 "\t" "地名" "\t"}' ${SEEDTXT1} > ../${USERDIC1}
-awk 'BEGIN{FS="\t"}!a[$0]++{print $1 "\t" $5 "\t" "組織" "\t"}' ${SEEDTXT2} > ../${USERDIC2}
+uconv -x '::[ [:^Katakana:] & [:^Hiragana:] & [:^Han:] & [^ー・「」、，（）]] Fullwidth-Halfwidth; ::[\p{Nl}] Latin-ASCII;' -f cp932 -t UTF-8 ${SRCTXT1} > ${SEEDTXT1}
+uconv -x '::[ [:^Katakana:] & [:^Hiragana:] & [:^Han:] & [^ー・「」、，（）]] Fullwidth-Halfwidth; ::[\p{Nl}] Latin-ASCII;' -f cp932 -t UTF-8 ${SRCTXT2} > ${SEEDTXT2}
+awk -f ken_all-convert-mozc-dictionary.awk ${SEEDTXT1} > ../${USERDIC1}
+awk -f jigyosyo-convert-mozc-dictionary.awk ${SEEDTXT2} > ../${USERDIC2}
 
 split --numeric-suffixes=1 -l 1000000 --additional-suffix=.txt ../${USERDIC1} ${USERDIC1}-
 split --numeric-suffixes=1 -l 1000000 --additional-suffix=.txt ../${USERDIC2} ${USERDIC2}-
