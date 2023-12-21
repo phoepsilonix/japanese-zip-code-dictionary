@@ -23,12 +23,12 @@ BEGIN{
                 split(chou[2], array, "、")
                 chou[1] = chou[1] "町"
             } else {
-            split(c[0], array, "、")
-            chou[1] = ""
-        }
-        for (x in array) {
-            print substr($3, 1, 3) "-" substr($3,4,4) "\t" $7 $8 chou[1] array[x] "\t" "地名" "\t"
-        }
+                split(c[0], array, "、")
+                chou[1] = ""
+            }
+            for (x in array) {
+                print substr($3, 1, 3) "-" substr($3,4,4) "\t" $7 $8 chou[1] array[x] "\t" "地名" "\t"
+            }
         } else {
             print substr($3, 1, 3) "-" substr($3,4,4) "\t" $7 $8 c[0] "\t" "地名" "\t"
         }
