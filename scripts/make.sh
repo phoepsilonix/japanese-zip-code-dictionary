@@ -2,6 +2,15 @@
 
 wget -nc https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip
 wget -nc https://www.post.japanpost.jp/zipcode/dl/jigyosyo/zip/jigyosyo.zip
+sha256sum --check ../last_checksum.txt
+FLAG=$?
+echo $FLAG
+if [[ "$FLAG" == "0" ]];then
+  echo "same checksum."
+  exit 1
+	else
+  echo "checksum changed."
+fi
 
 SEEDTXT1=ZIP.CSV
 SEEDTXT2=ZIP2.CSV
@@ -28,4 +37,6 @@ mkdir -p ../release
 tar cf ../release/${USERDIC}.tar ${USERDIC1}-*.txt ${USERDIC2}-*.txt ../LICENSE.user_dic
 xz -9 -e ../release/${USERDIC}.tar
 
+sha256sum ken_all.zip jigyosyo.zip > ../last_checksum.txt
 rm $SEEDTXT1 $SEEDTXT2 $SRCTXT1 $SRCTXT2 ken_all.zip jigyosyo.zip ${USERDIC1}-*.txt ${USERDIC2}-*.txt
+exit 0

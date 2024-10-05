@@ -1,25 +1,87 @@
 name: Release
 
 on:
+  schedule:
+    - cron: '0 21 * * 1'
+  workflow_dispatch:
   push:
     tags:
       - '*'
 
 jobs:
-  release:
+  build:
 
     runs-on: ubuntu-latest
-
+    outputs:
+      UPDATED: ${{ steps.build.outputs.UPDATED }}
     steps:
       - uses: actions/checkout@v4
       - name: Build
+        id: build
         run: |
           mkdir -p release
-          (cd scripts; bash make.sh)
-          ls release 1>&2
-      - name: Create release
-        uses: ncipollo/release-action@v1
+          (cd scripts; bash make.sh) && FLAG="0" || (FLAG="1" && true)
+          if [[ $FLAG == "0" ]];then
+            # updated
+            ls release ||true
+            echo "UPDATED=true" >> $GITHUB_OUTPUT
+            # same checksum
+          else
+            echo "UPDATED=false" >> $GITHUB_OUTPUT
+          fi
+
+  release:
+    needs: build
+    if: needs.build.outputs.UPDATED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          omitBody: true
-          artifacts: 'release/*'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Create new commit
+        run: |
+          git commit --allow-empty -m "Release commit"
+          git push
+
+      - name: Get current date
+        id: date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Get or create tag
+        id: get_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+          if [ -z "$LATEST_TAG" ] || [ "$(git rev-parse $LATEST_TAG)" != "${{ steps.get_commit.outputs.COMMIT_HASH }}" ]; then
+            NEW_TAG="$(date +'%Y%m%d')"
+            echo "TAG=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "NEW_TAG=true" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "NEW_TAG=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create new tag if needed
+        if: steps.get_tag.outputs.NEW_TAG == 'true'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag ${{ steps.get_tag.outputs.TAG }}
+          git push origin ${{ steps.get_tag.outputs.TAG }}
+
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_tag.outputs.TAG }}
+          release_name: ${{ steps.get_tag.outputs.TAG }}
+          draft: false
+          prerelease: false
