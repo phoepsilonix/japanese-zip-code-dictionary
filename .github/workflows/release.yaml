@@ -9,8 +9,7 @@ on:
       - '*'
 
 jobs:
-  build:
-
+  release:
     runs-on: ubuntu-latest
     outputs:
       UPDATED: ${{ steps.build.outputs.UPDATED }}
@@ -30,31 +29,25 @@ jobs:
             echo "UPDATED=false" >> $GITHUB_OUTPUT
           fi
 
-  release:
-    needs: build
-    if: needs.build.outputs.UPDATED == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Configure Git
+        if: steps.build.outputs.UPDATED == 'true'
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
       - name: Create new commit
+        if: steps.build.outputs.UPDATED == 'true'
         run: |
           git commit --allow-empty -m "Release commit"
           git push
 
       - name: Get current date
+        if: steps.build.outputs.UPDATED == 'true'
         id: date
         run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
       - name: Get or create tag
+        if: steps.build.outputs.UPDATED == 'true'
         id: get_tag
         run: |
           LATEST_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
@@ -68,7 +61,7 @@ jobs:
           fi
 
       - name: Create new tag if needed
-        if: steps.get_tag.outputs.NEW_TAG == 'true'
+        if: steps.build.outputs.UPDATED == 'true' && steps.get_tag.outputs.NEW_TAG == 'true'
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -77,11 +70,10 @@ jobs:
 
 
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: steps.build.outputs.UPDATED == 'true'
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ steps.get_tag.outputs.TAG }}
-          release_name: ${{ steps.get_tag.outputs.TAG }}
-          draft: false
-          prerelease: false
+          tag: ${{ steps.get_tag.outputs.TAG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          omitBody: true
+          artifacts: 'release/*'
