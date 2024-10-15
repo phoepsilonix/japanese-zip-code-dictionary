@@ -38,7 +38,8 @@ jobs:
       - name: Create new commit
         if: steps.build.outputs.UPDATED == 'true'
         run: |
-          git commit --allow-empty -m "Release commit"
+          MSG=$(echo -e "郵便番号辞書(Mozcユーザー辞書型式)\n\n$(cat last_checksum.txt)")
+          git commit -a --allow-empty -m "$MSG"
           git push
 
       - name: Get current date
